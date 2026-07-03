@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quant Signals — Mission Control</title>
+<style>
+  :root {
+    --bg: #0E1420; --panel: #161E2E; --line: #26324A;
+    --ink: #E8E4D8; --muted: #8A94A8; --accent: #E8B44C;
+    --good: #5BBD8B; --bad: #D06A5E;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+    --disp: "Avenir Next", Avenir, Futura, "Century Gothic", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, sans-serif;
+    margin: 0; padding: 28px 20px 60px;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+  h1 { font-family: var(--disp); font-weight: 600; font-size: 26px; margin: 0; letter-spacing: .01em; }
+  h2 { font-family: var(--disp); font-weight: 600; font-size: 15px; margin: 0 0 12px;
+       text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+  .stamp { color: var(--muted); font-family: var(--mono); font-size: 12.5px; }
+  .strip { display: flex; flex-wrap: wrap; gap: 10px 26px; align-items: baseline;
+           border-block: 1px solid var(--line); padding: 12px 2px; }
+  .strip b { font-family: var(--disp); font-weight: 600; }
+  .pill { display: inline-block; padding: 1px 10px 2px; border-radius: 999px;
+          font-family: var(--mono); font-size: 12px; vertical-align: 1px; }
+  .pill.live { background: rgba(232,180,76,.16); color: var(--accent); border: 1px solid rgba(232,180,76,.45); }
+  .pill.ok   { background: rgba(91,189,139,.14); color: var(--good); border: 1px solid rgba(91,189,139,.4); }
+  .pill.wait { background: rgba(138,148,168,.12); color: var(--muted); border: 1px solid var(--line); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 18px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px; }
+  table { border-collapse: collapse; width: 100%; font-family: var(--mono); font-size: 13px;
+          font-variant-numeric: tabular-nums; }
+  th { text-align: left; color: var(--muted); font-weight: 500; padding: 4px 12px 6px 0;
+       border-bottom: 1px solid var(--line); font-size: 11.5px; text-transform: uppercase; letter-spacing: .07em; }
+  td { padding: 7px 12px 7px 0; border-bottom: 1px solid rgba(38,50,74,.5); }
+  tr:last-child td { border-bottom: 0; }
+  .num { text-align: right; }  th.num { text-align: right; }
+  .good { color: var(--good); } .bad { color: var(--bad); } .dim { color: var(--muted); }
+  .champ td:first-child::after { content: "champion"; margin-left: 8px; font-size: 10px;
+    color: var(--accent); border: 1px solid rgba(232,180,76,.45); border-radius: 999px; padding: 0 7px 1px; }
+  .bar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin: 10px 0 6px; }
+  .bar i { display: block; height: 100%; width: 13%; background: var(--accent); }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 13.5px; }
+  .kv dt { color: var(--muted); margin: 0; } .kv dd { margin: 0; font-family: var(--mono); font-size: 13px; }
+  .road { display: flex; gap: 0; overflow-x: auto; padding-bottom: 6px; }
+  .stage { min-width: 168px; flex: 1; border-left: 1px solid var(--line); padding: 2px 14px 4px; }
+  .stage:first-child { border-left: 0; padding-left: 2px; }
+  .stage .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+  .stage.now .tag { color: var(--accent); }
+  .stage h3 { font-family: var(--disp); font-size: 14.5px; margin: 3px 0 5px; font-weight: 600; }
+  .stage p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+  .gate { font-family: var(--mono); font-size: 11.5px; color: var(--ink);
+          border: 1px dashed var(--line); border-radius: 4px; padding: 3px 8px; margin-top: 8px; display: inline-block; }
+  .note { border-left: 3px solid var(--accent); padding: 2px 0 2px 14px; font-size: 13.5px; color: var(--muted); }
+  .note b { color: var(--ink); font-weight: 600; }
+  ul.flat { margin: 0; padding-left: 18px; font-size: 13.5px; }
+  ul.flat li { margin-bottom: 5px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+
+
+<div class="wrap">
+  <header>
+    <h1>Quant Signals — Mission Control</h1>
+    <div class="stamp">snapshot · Thu Jul 3, 2026 · 01:10 CDT · refreshed on request</div>
+  </header>
+
+  <div class="strip">
+    <span><b>Stage A</b> — research program <span class="pill live">round 4 in flight</span></span>
+    <span>Paper record <span class="pill ok">live · week 1</span></span>
+    <span>Next milestone <b>M1 first read</b> <span class="stamp">mid-Oct · ~15 settled weeks</span></span>
+    <span>Production <span class="pill ok">brain-server · cron Fri 23:00 UTC</span></span>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Strategy scoreboard</h2>
+      <table>
+        <thead><tr><th>strategy</th><th class="num">sharpe</th><th class="num">cagr</th><th class="num">max dd</th><th class="num">turnover/wk</th></tr></thead>
+        <tbody>
+          <tr class="champ"><td>ml</td><td class="num good">1.02</td><td class="num">24.4%</td><td class="num bad">−37.9%</td><td class="num">0.36</td></tr>
+          <tr><td>blend</td><td class="num">1.00</td><td class="num">20.8%</td><td class="num">−28.2%</td><td class="num">0.32</td></tr>
+          <tr><td>baseline</td><td class="num">0.96</td><td class="num">18.2%</td><td class="num">−23.0%</td><td class="num">0.16</td></tr>
+          <tr><td class="dim">spy (benchmark)</td><td class="num dim">0.81</td><td class="num dim">14.9%</td><td class="num dim">−33.7%</td><td class="num dim">—</td></tr>
+        </tbody>
+      </table>
+      <p class="stamp" style="margin:10px 0 0">walk-forward backtest, 2018–2026 matched window, buffer bands + regime filter, 10 bps costs. Survivorship-biased: veterans-only check shrinks every edge ≈ 0.1 sharpe.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Forward paper record</h2>
+      <dl class="kv">
+        <dt>Weeks recorded</dt><dd>1 (2026-07-02 · 150 positions)</dd>
+        <dt>Weeks settled</dt><dd>0 — first settles ~Jul 17</dd>
+        <dt>Regime at entry</dt><dd>risk-on · exposure 1.0</dd>
+        <dt>Champion</dt><dd>ml — change needs ≥26 settled wks</dd>
+        <dt>Record meaningful</dt><dd>~Oct 2026 (12+ weeks)</dd>
+        <dt>Ledger copies</dt><dd>server ×2 + Mac (git)</dd>
+      </dl>
+      <p class="note" style="margin-top:12px"><b>Positions are recorded before outcomes exist.</b> The ledger is append-only and git-committed — the one test nobody can fool.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Round 4 — live</h2>
+      <dl class="kv">
+        <dt>Experiment</dt><dd>108-config hyperparameter sweep</dd>
+        <dt>Progress</dt><dd>14 / 108 · ~62 s each · ETA ≈ 02:45 CDT</dd>
+      </dl>
+      <div class="bar"><i></i></div>
+      <dl class="kv">
+        <dt>Best so far</dt><dd>0.88 dev-sharpe (not comparable to headline — shorter window, in-sample selection)</dd>
+        <dt>Then</dt><dd>selection rule → single audited holdout vs incumbent</dd>
+        <dt>Holdout budget</dt><dd>query 1 of ≤6 this window</dd>
+        <dt>Promotion</dt><dd>user-gated → would enter ledger as ml_v2 challenger</dd>
+      </dl>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Roadmap — gate-driven, front-loaded cadence</h2>
+    <div class="road">
+      <div class="stage now"><span class="tag">now · Jul</span><h3>R4 · Tuning sweep</h3>
+        <p>Harness + 108 configs. Winner faces the audited holdout tonight.</p></div>
+      <div class="stage"><span class="tag">mid-Jul</span><h3>R5 · Russell 1000</h3>
+        <p>2× cross-section breadth — the biggest signal lever available.</p></div>
+      <div class="stage"><span class="tag">Aug</span><h3>R6 · New features</h3>
+        <p>Earnings proximity, sector-relative momentum, overnight/intraday split.</p></div>
+      <div class="stage"><span class="tag">Oct</span><h3>M1 · First read</h3>
+        <p>~15 settled weeks. Calibration, not celebration.</p>
+        <span class="gate">research pause before M1</span></div>
+      <div class="stage"><span class="tag">Nov–Dec</span><h3>B · Credential</h3>
+        <p>Public repo + written case study — whatever the record shows.</p></div>
+      <div class="stage"><span class="tag">~Jan 2027</span><h3>M2 → C · Real money</h3>
+        <p>Small, manual weekly execution; slippage log becomes the new honesty layer.</p>
+        <span class="gate">gate: beat SPY, net, ≥26 settled wks</span></div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Infrastructure</h2>
+      <ul class="flat">
+        <li><b>brain-server</b> — Oracle A1 (4c/24GB, always-free, $0). Runs the weekly pipeline Fri 23:00 UTC and tonight's sweep.</li>
+        <li><b>Mac</b> — mirror only: Sat 09:00 brain-sync pulls ledger, mirrors outputs, logs to the second brain.</li>
+        <li><b>Tests</b> — 71 passing · anti-look-ahead and purge guards mutation-verified.</li>
+        <li><b>Dashboard</b> — <span class="stamp">streamlit run app.py</span> (5 tabs incl. Paper Record).</li>
+      </ul>
+    </section>
+    <section class="panel">
+      <h2>Standing honesty notes</h2>
+      <ul class="flat">
+        <li>Backtests flatter: current-constituent universe inflates results (veterans-only ≈ −0.1 sharpe). Forward record is the referee.</li>
+        <li>Dev-window selection is in-sample by design — the island rule filters little (≈8% of luck); the <b>single-use holdout</b> is the real defense.</li>
+        <li>Backtest ≠ live. Nothing here is a guarantee; the system's job is to prevent self-deception, not promise returns.</li>
+      </ul>
+    </section>
+  </div>
+</div>
+
+</body>
+</html>
